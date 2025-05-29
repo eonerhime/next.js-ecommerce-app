@@ -18,14 +18,6 @@ export async function connectToDb() {
     }
   }
 
-  const user = process.env.MONGODB_USERNAME;
-  const password = process.env.MONGODB_PASSWORD;
-
-  // Check if credentials exist
-  if (!user || !password) {
-    throw new Error("MongoDB credentials not found in environment variables");
-  }
-
   // Validate the credentials
   const uri = `${process.env.MONGODB_URI}`;
 
