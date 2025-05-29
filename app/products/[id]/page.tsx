@@ -16,8 +16,6 @@ export default async function ProductDetailPage({
   );
   const product = await res.json();
 
-  console.log("Product:", product);
-
   if (!product) {
     return <NotFoundPage />;
   }

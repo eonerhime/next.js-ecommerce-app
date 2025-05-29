@@ -5,7 +5,17 @@ let cachedDb: Db | null = null;
 
 export async function connectToDb() {
   if (cachedClient && cachedDb) {
-    return { client: cachedClient, db: cachedDb };
+    try {
+      // Test the connection
+      await cachedClient.db("admin").command({ ping: 1 });
+      console.log("Using cached database connection");
+      return { client: cachedClient, db: cachedDb };
+    } catch (error) {
+      console.log("Cached connection is stale, creating new connection");
+      // Clear the cache if connection is dead
+      cachedClient = null;
+      cachedDb = null;
+    }
   }
 
   const user = process.env.MONGODB_USERNAME;
@@ -16,9 +26,8 @@ export async function connectToDb() {
     throw new Error("MongoDB credentials not found in environment variables");
   }
 
-  // URL encode the password to handle special characters
-  const encodedPassword = encodeURIComponent(password);
-  const uri = `mongodb+srv://${user}:${encodedPassword}@cluster0.j8gvg35.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+  // Validate the credentials
+  const uri = `${process.env.MONGODB_URI}`;
 
   try {
     const client = new MongoClient(uri, {
@@ -27,12 +36,22 @@ export async function connectToDb() {
         strict: true,
         deprecationErrors: true,
       },
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     });
+
+    console.log("Creating new MongoDB connection");
+    await client.connect();
+
+    // Test the connection
+    await client.db("admin").command({ ping: 1 });
+    console.log("Successfully connected to MongoDB");
 
     cachedClient = client;
     cachedDb = client.db("ecommerce-nextjs");
 
-    return { client, db: cachedDb };
+    return { client: cachedClient, db: cachedDb };
   } catch (error) {
     console.error("MongoDB connection failed:", error);
     throw error;
