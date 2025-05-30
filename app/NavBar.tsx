@@ -6,9 +6,9 @@ export default function NavBar() {
       <div className="container mx-auto px-4 py-3 justify-between items-center">
         <ul className="flex justify-end space-x-4 text-default">
           <li>
-            {/* <Link href="/" className=" hover:text-gray-400">
+            <Link href="/" className=" hover:text-gray-400">
               Home
-            </Link> */}
+            </Link>
           </li>
           <li>
             <Link href="/products" className="hover:text-gray-400">
