@@ -9,24 +9,28 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Params }
 ) {
-  const { db } = await connectToDb();
-  const productId = params.id;
-  const product = await db.collection("products").findOne({ id: productId });
+  try {
+    const { db } = await connectToDb();
+    const productId = params.id;
+    const products = await db.collection("products").findOne({ id: productId });
 
-  if (!product) {
-    return new Response(JSON.stringify({ error: "Product not found" }), {
-      status: 404,
+    // If the product is found, return it
+    return new Response(JSON.stringify(products), {
+      status: 200,
       headers: {
         "Content-Type": "application/json",
       },
     });
-  }
+  } catch (error) {
+    console.error("API Error:", error);
 
-  // If the product is found, return it
-  return new Response(JSON.stringify(product), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+    // Always return JSON, even on error
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error occurred";
+
+    return Response.json(
+      { error: "Failed to fetch products", details: errorMessage },
+      { status: 500 }
+    );
+  }
 }
