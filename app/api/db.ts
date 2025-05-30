@@ -18,11 +18,19 @@ export async function connectToDb() {
     }
   }
 
-  // Validate the credentials
-  const uri = `${process.env.MONGODB_URI}`;
+  const username = process.env.MONGODB_USERNAME;
+  const password = process.env.MONGODB_PASSWORD;
+  const database = process.env.MONGODB_DATABASE || "ecommerce-nextjs";
+
+  const uri = `mongodb+srv://${username}:${password}@cluster0.j8gvg35.mongodb.net/${database}?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidCertificates=false&tlsAllowInvalidHostnames=false`;
 
   try {
     const client = new MongoClient(uri, {
+      tls: true,
+      tlsInsecure: false,
+      minPoolSize: 5,
+      maxIdleTimeMS: 30000,
+      connectTimeoutMS: 20000,
       serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
