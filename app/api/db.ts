@@ -22,23 +22,24 @@ export async function connectToDb() {
   const password = process.env.MONGODB_PASSWORD;
   const database = process.env.MONGODB_DATABASE || "ecommerce-nextjs";
 
-  const uri = `mongodb+srv://${username}:${password}@cluster0.j8gvg35.mongodb.net/${database}?retryWrites=true&w=majority&ssl=true&tlsAllowInvalidCertificates=false&tlsAllowInvalidHostnames=false`;
+  // Simplified connection string - remove conflicting TLS options
+  const uri = `mongodb+srv://${username}:${password}@cluster0.j8gvg35.mongodb.net/${database}?retryWrites=true&w=majority`;
 
   try {
     const client = new MongoClient(uri, {
+      // Use only client options for TLS
       tls: true,
-      tlsInsecure: false,
+      maxPoolSize: 10,
       minPoolSize: 5,
       maxIdleTimeMS: 30000,
       connectTimeoutMS: 20000,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
       serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
       },
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
     });
 
     console.log("Creating new MongoDB connection");
